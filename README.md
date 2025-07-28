@@ -1,3 +1,36 @@
+# dados-meraki
+
+Este projeto facilita a extração de informações de dispositivos Meraki e a geração de planilhas Excel com dados relevantes de WAN.
+
+## Estrutura dos Arquivos
+
+- **devices_meraki.py**: Script principal para extração dos dados dos dispositivos Meraki, filtrando por modelo, extraindo informações de WAN a partir das notas e gerando uma planilha Excel. Inclui uma função para desabilitar a verificação SSL do requests (apenas para desenvolvimento).
+
+- **devices.py**: (Descreva aqui o propósito do arquivo caso ele seja utilizado. Exemplo: Script auxiliar para manipulação ou análise adicional dos dados extraídos. Caso não esteja em uso, pode ser ignorado.)
+
+## Como usar
+
+1. Crie um arquivo `.env` na raiz do projeto com sua chave de API:
+	```
+	API_KEY=seu_api_key_aqui
+	```
+
+2. Instale as dependências:
+	```bash
+	pip install -r requirements.txt
+	```
+
+3. Execute o script principal:
+	```bash
+	python devices_meraki.py
+	```
+
+4. Será gerado um arquivo `devices_wan.xlsx` com as colunas Serial, wan1Ip, wan2Ip, wan3Ip, Wan 1, Wan 2, Wan 3.
+
+## Observações
+
+- O método `patch_requests_ssl()` desabilita a verificação SSL globalmente para o pacote requests, útil para ambientes de desenvolvimento com certificados autoassinados.
+- O script busca dispositivos dos modelos MX67 e MX68, mas pode ser facilmente adaptado para outros modelos.
 
 
 # dados-meraki
