@@ -23,42 +23,59 @@ class MerakiAPI:
             col.strip().upper() for col in df_migrados.columns
         ]
         siglas_restaurantes = set(
-            df_migrados[df_migrados["TIPO 2"].str.upper() == "RESTAURANTE"][
-                "SIGLA"
+            [
+                f"MCD_{sigla.upper().strip()}"
+                for sigla in df_migrados[
+                    df_migrados["TIPO 2"].str.upper() == "RESTAURANTE"
+                ]["SIGLA"]
+                if pd.notna(sigla)
             ]
-            .str.upper()
-            .str.strip()
         )
-        df_quiosques = df_migrados[
-            df_migrados["TIPO 2"].str.upper() == "QUIOSQUE"
-        ]
-        siglas_quiosques = set()
-        for _, row in df_quiosques.iterrows():
-            sigla = str(row["SIGLA"]).upper().strip()
-            ksk_found = False
-            for col in df_quiosques.columns:
-                if col.startswith("KSK") or "KSK" in col:
-                    val = str(row[col]).upper().strip()
-                    if val and val != "NAN":
-                        siglas_quiosques.add(f"{sigla}_{val}")
-                        ksk_found = True
-            if not ksk_found:
-                for i in range(1, 11):
-                    ksk = f"KSK{str(i).zfill(2)}"
-                    siglas_quiosques.add(f"{sigla}_{ksk}")
-            df_devices = pd.DataFrame(devices)
-            df_devices["_NAME_UPPER"] = (
-                df_devices["name"].str.upper().fillna("")
+        if "SIGLA REVISTA" in df_migrados.columns:
+            siglas_quiosques = set(
+                [
+                    f"MCD_{sigla_revista.upper().strip()}"
+                    for sigla_revista in df_migrados[
+                        df_migrados["TIPO 2"].str.upper() == "QUIOSQUE"
+                    ]["SIGLA REVISTA"]
+                    if pd.notna(sigla_revista)
+                ]
             )
-            df_devices["migrados"] = df_devices.apply(
-                lambda row: self._is_migrado(
-                    row["_NAME_UPPER"], siglas_restaurantes, siglas_quiosques
-                ),
-                axis=1,
+        else:
+            siglas_quiosques = set()
+
+        devices["sigla_match"] = devices["name"].apply(
+            self._extrair_sigla_match
+        )
+        devices["migrados"] = devices["sigla_match"].apply(
+            lambda sigla: self._is_migrado_sigla(
+                sigla, siglas_restaurantes, siglas_quiosques
             )
-            df_devices = df_devices.drop(columns=["_NAME_UPPER"])
-            return df_devices.to_dict(orient="records")
-        return devices
+        )
+        devices = devices.drop(columns=["sigla_match"])
+        return devices.to_dict(orient="records")
+
+    def _extrair_sigla_match(self, name):
+        if not isinstance(name, str):
+            return ""
+        name = name.upper().strip()
+        if name.startswith("MCD_"):
+            partes = name.split("_")
+            if len(partes) >= 3 and partes[2].startswith("KSK"):  # Quiosque
+                return "_".join(partes[:3])
+            elif len(partes) >= 2:  # Restaurante
+                return "_".join(partes[:2])
+        return ""
+
+    def _is_migrado_sigla(
+        self, sigla_match, siglas_restaurantes, siglas_quiosques
+    ):
+        if (
+            sigla_match in siglas_restaurantes
+            or sigla_match in siglas_quiosques
+        ):
+            return "Sim"
+        return "Não"
 
     def _is_migrado(self, name, siglas_restaurantes, siglas_quiosques):
         for sigla in siglas_restaurantes:
