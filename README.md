@@ -4,9 +4,7 @@ Este projeto facilita a extração de informações de dispositivos Meraki e a g
 
 ## Estrutura dos Arquivos
 
-- **devices_meraki.py**: Script principal para extração dos dados dos dispositivos Meraki, filtrando por modelo, extraindo informações de WAN a partir das notas e gerando uma planilha Excel. Inclui uma função para desabilitar a verificação SSL do requests (apenas para desenvolvimento).
-
-- **devices.py**: (Descreva aqui o propósito do arquivo caso ele seja utilizado. Exemplo: Script auxiliar para manipulação ou análise adicional dos dados extraídos. Caso não esteja em uso, pode ser ignorado.)
+- **meraki_organizacoes_dispositivos.py**: Script principal. Gera uma planilha Excel (`meraki_organizacoes_dispositivos.xlsx`) com duas abas: uma com todas as organizações e outra com todos os dispositivos de todas as organizações Meraki acessíveis pela API_KEY.
 
 ## Como usar
 
@@ -20,12 +18,13 @@ Este projeto facilita a extração de informações de dispositivos Meraki e a g
 	pip install -r requirements.txt
 	```
 
-3. Execute o script principal:
+
+3. Para gerar uma planilha Excel com duas abas (Organizações e Dispositivos):
 	```bash
-	python devices_meraki.py
+	python meraki_organizacoes_dispositivos.py
 	```
 
-4. Será gerado um arquivo `devices_wan.xlsx` com as colunas Serial, wan1Ip, wan2Ip, wan3Ip, Wan 1, Wan 2, Wan 3.
+O arquivo `meraki_organizacoes_dispositivos.xlsx` será criado com todos os dados extraídos.
 
 ## Observações
 
@@ -51,13 +50,10 @@ Este projeto facilita a extração de informações de dispositivos Meraki e a g
 
 ## ✨ O que o projeto faz?
 
-- Consulta a API da Cisco Meraki para buscar dispositivos dos modelos <b>MX67</b> e <b>MX68</b>.
-- Para cada dispositivo, extrai o número de série (<code>serial</code>) e, a partir do campo <code>notes</code>, identifica diversos padrões de identificadores de WAN.
-- Gera uma planilha <b>devices_wan.xlsx</b> no diretório raiz do projeto, contendo as colunas:
-	- Serial
-	- Wan 1
-	- Wan 2
-	- Wan 3
+- Consulta a API da Cisco Meraki para buscar todas as organizações e todos os dispositivos de todas as organizações disponíveis para a sua API_KEY.
+- Gera uma planilha <b>meraki_organizacoes_dispositivos.xlsx</b> no diretório raiz do projeto, contendo duas abas:
+	- Organizacoes: todos os dados das organizações
+	- Dispositivos: todos os dados dos dispositivos de todas as organizações
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -101,15 +97,16 @@ Este projeto facilita a extração de informações de dispositivos Meraki e a g
 
 ## ▶️ Como rodar o projeto
 
+
 Execute o script principal:
 
 ```bash
-python devices.py
+python meraki_organizacoes_dispositivos.py
 ```
 
 O script irá:
-- Buscar os dispositivos dos modelos MX67 e MX68.
-- Gerar a planilha <b>devices_wan.xlsx</b> com os dados extraídos.
+- Buscar todas as organizações e todos os dispositivos de todas as organizações.
+- Gerar a planilha <b>meraki_organizacoes_dispositivos.xlsx</b> com os dados extraídos em duas abas.
 
 ## 🔎 Observações
 - O campo <code>notes</code> de cada dispositivo é analisado para encontrar:
