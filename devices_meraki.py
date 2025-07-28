@@ -1,3 +1,18 @@
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+# Monkey patch para ignorar SSL globalmente (apenas para desenvolvimento)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+old_request = requests.Session.request
+
+
+def new_request(self, *args, **kwargs):
+    kwargs["verify"] = False
+    return old_request(self, *args, **kwargs)
+
+
+requests.Session.request = new_request
+
 import os
 import re
 
@@ -65,7 +80,7 @@ class MerakiAPI:
     def __init__(self, api_key: str):
         # Desabilita a verificação SSL para evitar erro de certificado autoassinado
         self.dashboard = meraki.DashboardAPI(
-            api_key, suppress_logging=True, certificate_path=False
+            api_key, suppress_logging=True, certificate_path=""
         )
 
     def get_organization_id(self) -> str:
