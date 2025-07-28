@@ -72,7 +72,14 @@ if __name__ == "__main__":
                             if isinstance(d, dict)
                         )
                         device["details"] = details_str
-                all_devices.extend(devices)
+                    # Expandir notes em note.1, note.2, ...
+                    notes = device.get("notes")
+                    if isinstance(notes, str) and "\n" in notes:
+                        notes_split = notes.split("\n")
+                        for idx, note in enumerate(notes_split):
+                            key = f"note.{idx + 1}"
+                            device[key] = note
+            all_devices.extend(devices)
             with pd.ExcelWriter(
                 "meraki_organizacoes_dispositivos.xlsx"
             ) as writer:
