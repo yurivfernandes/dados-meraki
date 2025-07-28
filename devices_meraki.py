@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-os.environ["MERAKI_VERIFY_SSL_CERTS"] = "False"
-
 
 class MerakiAPI:
     @staticmethod
@@ -67,7 +65,7 @@ class MerakiAPI:
     def __init__(self, api_key: str):
         # Desabilita a verificação SSL para evitar erro de certificado autoassinado
         self.dashboard = meraki.DashboardAPI(
-            api_key, suppress_logging=True, verify=False
+            api_key, suppress_logging=True, certificate_path=False
         )
 
     def get_organization_id(self) -> str:
