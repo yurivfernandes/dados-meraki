@@ -19,7 +19,23 @@ class MerakiAPI:
         return self.dashboard.organizations.getOrganizations()
 
     def get_all_devices(self, org_id: str) -> list:
-        return self.dashboard.organizations.getOrganizationDevices(org_id)
+        """Busca todos os dispositivos de uma organização, paginando se necessário."""
+        all_devices = []
+        starting_after = None
+        while True:
+            params = {"perPage": 1000}
+            if starting_after:
+                params["startingAfter"] = starting_after
+            resp = self.dashboard.organizations.getOrganizationDevices(
+                org_id, **params
+            )
+            if not resp:
+                break
+            all_devices.extend(resp)
+            if len(resp) < params["perPage"]:
+                break
+            starting_after = resp[-1]["serial"]
+        return all_devices
 
 
 if __name__ == "__main__":
@@ -35,10 +51,8 @@ if __name__ == "__main__":
         else:
             all_devices = []
             for org in orgs:
-                # Expandir campos compostos da organização
                 for k, v in list(org.items()):
                     if isinstance(v, dict):
-                        # Para dicts, serializa como chave1:valor1; chave2:valor2
                         org[k] = "; ".join(
                             f"{kk}:{vv}" for kk, vv in v.items()
                         )
@@ -48,11 +62,9 @@ if __name__ == "__main__":
                 devices = meraki_api.get_all_devices(org_id)
                 for device in devices:
                     device["organizationId"] = org_id
-                    # Expandir listas para string legível
                     if isinstance(device.get("tags"), list):
                         device["tags"] = ", ".join(device["tags"])
                     if isinstance(device.get("details"), list):
-                        # Junta os pares name/value em uma string
                         details_list = device["details"]
                         details_str = "; ".join(
                             f"{d.get('name', '')}: {d.get('value', '')}"
@@ -61,7 +73,6 @@ if __name__ == "__main__":
                         )
                         device["details"] = details_str
                 all_devices.extend(devices)
-            # Criar o Excel com duas abas
             with pd.ExcelWriter(
                 "meraki_organizacoes_dispositivos.xlsx"
             ) as writer:
