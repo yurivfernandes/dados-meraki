@@ -33,33 +33,40 @@ class MerakiAPI:
     def extract_wan_ids_from_notes(notes: str) -> dict:
         """
         Extrai identificadores dos seguintes padrões do campo notes:
-        - 7 dígitos inteiros
         - BN_XXXXXXX (BN_ + 7 números)
         - BLXXXXXXXXXXXXX (BL + 13 números)
         - SPO-XXXXXXXXX-XX (SPO-10 caracteres-3 caracteres)
         - ICCID com 20 dígitos (apenas os 20 dígitos após ICCID)
+        - ARQ/IP/XXXXX (5 números após ARQ/IP/)
+        - CAS/IP/XXXXX (5 números após CAS/IP/)
+        - XXX/XXXXXXXX-X (3 números / 8 números - 1 número)
+        - 7 dígitos inteiros (apenas se não fizer parte dos padrões acima)
         Retorna um dicionário: {"Wan 1": valor, ...}
         """
         import re
 
         ids = []
-        # 1. 7 dígitos inteiros
-        ids += re.findall(r"(?<!\d)(\d{7})(?!\d)", notes)
-        # 2. BN_XXXXXXX
-        ids += re.findall(r"BN_(\d{7})", notes)
-        # 3. BLXXXXXXXXXXXXX
-        ids += re.findall(r"BL(\d{13})", notes)
-        # 4. SPO-XXXXXXXXX-XX
-        ids += re.findall(r"SPO-([A-Za-z0-9]{10}-[A-Za-z0-9]{3})", notes)
-        # 5. ICCID com 20 dígitos (apenas os 20 dígitos após ICCID)
+        # 1. BN_XXXXXXX
+        ids += re.findall(r"BN_\d{7}", notes)
+        # 2. BLXXXXXXXXXXXXX
+        ids += re.findall(r"BL\d{13}", notes)
+        # 3. SPO-XXXXXXXXX-XX
+        ids += re.findall(r"SPO-[A-Za-z0-9]{10}-[A-Za-z0-9]{3}", notes)
+        # 4. ICCID com 20 dígitos (apenas os 20 dígitos após ICCID)
         iccid_matches = re.findall(r"ICCID\s*=*\s*(\d{20})", notes)
         ids += iccid_matches
-        # 6. ARQ/IP/XXXXX (5 números após ARQ/IP/)
-        ids += re.findall(r"ARQ/IP/(\d{5})", notes)
-        # 7. CAS/IP/XXXXX (5 números após CAS/IP/)
-        ids += re.findall(r"CAS/IP/(\d{5})", notes)
-        # 8. XXX/XXXXXXXX-X (3 números / 8 números - 1 número)
-        ids += re.findall(r"(\d{3}/\d{8}-\d)", notes)
+        # 5. ARQ/IP/XXXXX (5 números após ARQ/IP/)
+        ids += re.findall(r"ARQ/IP/\d{5}", notes)
+        # 6. CAS/IP/XXXXX (5 números após CAS/IP/)
+        ids += re.findall(r"CAS/IP/\d{5}", notes)
+        # 7. XXX/XXXXXXXX-X (3 números / 8 números - 1 número)
+        ids += re.findall(r"\d{3}/\d{8}-\d", notes)
+        # 8. 7 dígitos inteiros (apenas se não fizer parte dos padrões acima)
+        ids += [
+            m
+            for m in re.findall(r"(?<!\d)(\d{7})(?!\d)", notes)
+            if f"BN_{m}" not in ids
+        ]
         return {f"Wan {i + 1}": wan_id for i, wan_id in enumerate(ids)}
 
     def __init__(self, api_key: str):
@@ -106,16 +113,13 @@ if __name__ == "__main__":
         modelos = ["MX67", "MX68"]
         dados_planilha = []
         for modelo in modelos:
-            print(f"\nDispositivos para o modelo {modelo}:")
             resultado = meraki.get_devices(modelo)
-            print(json.dumps(resultado, indent=2, ensure_ascii=False))
             if isinstance(resultado, list):
                 for device in resultado:
                     serial = device.get("serial", "")
                     notes = device.get("notes", "")
                     wans = MerakiAPI.extract_wan_ids_from_notes(notes)
                     linha = {"Serial": serial}
-                    # Adiciona Wan 1, Wan 2, Wan 3 (ou vazio se não houver)
                     for i in range(1, 4):
                         linha[f"Wan {i}"] = wans.get(f"Wan {i}", "")
                     dados_planilha.append(linha)
