@@ -111,8 +111,16 @@ if __name__ == "__main__":
                 for device in resultado:
                     serial = device.get("serial", "")
                     notes = device.get("notes", "")
+                    wan1ip = device.get("wan1Ip", "")
+                    wan2ip = device.get("wan2Ip", "")
+                    wan3ip = device.get("wan3Ip", "")
                     wans = MerakiAPI.extract_wan_ids_from_notes(notes)
-                    linha = {"Serial": serial}
+                    linha = {
+                        "Serial": serial,
+                        "wan1Ip": wan1ip,
+                        "wan2Ip": wan2ip,
+                        "wan3Ip": wan3ip,
+                    }
                     for i in range(1, 4):
                         linha[f"Wan {i}"] = wans.get(f"Wan {i}", "")
                     dados_planilha.append(linha)
