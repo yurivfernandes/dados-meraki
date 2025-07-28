@@ -1,4 +1,5 @@
 import os
+import re
 
 import meraki
 import pandas as pd
@@ -36,7 +37,7 @@ class MerakiAPI:
         - 7 dígitos inteiros (apenas se não fizer parte dos padrões acima)
         Retorna um dicionário: {"Wan 1": valor, ...}
         """
-        import re
+        os.environ["MERAKI_VERIFY_SSL_CERTS"] = "False"
 
         ids = []
         # 1. BN_XXXXXXX

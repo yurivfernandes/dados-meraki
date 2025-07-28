@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import pandas as pd
 import requests
@@ -43,7 +44,6 @@ class MerakiAPI:
         - 7 dígitos inteiros (apenas se não fizer parte dos padrões acima)
         Retorna um dicionário: {"Wan 1": valor, ...}
         """
-        import re
 
         ids = []
         # 1. BN_XXXXXXX
