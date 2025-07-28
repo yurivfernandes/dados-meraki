@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+os.environ["MERAKI_VERIFY_SSL_CERTS"] = "False"
+
 
 class MerakiAPI:
     @staticmethod
@@ -37,7 +39,6 @@ class MerakiAPI:
         - 7 dígitos inteiros (apenas se não fizer parte dos padrões acima)
         Retorna um dicionário: {"Wan 1": valor, ...}
         """
-        os.environ["MERAKI_VERIFY_SSL_CERTS"] = "False"
 
         ids = []
         # 1. BN_XXXXXXX
@@ -64,7 +65,10 @@ class MerakiAPI:
         return {f"Wan {i + 1}": wan_id for i, wan_id in enumerate(ids)}
 
     def __init__(self, api_key: str):
-        self.dashboard = meraki.DashboardAPI(api_key, suppress_logging=True)
+        # Desabilita a verificação SSL para evitar erro de certificado autoassinado
+        self.dashboard = meraki.DashboardAPI(
+            api_key, suppress_logging=True, verify=False
+        )
 
     def get_organization_id(self) -> str:
         """Retorna o organization id"""
