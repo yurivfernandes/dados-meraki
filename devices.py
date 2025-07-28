@@ -16,14 +16,50 @@ headers = {
 
 class MerakiAPI:
     @staticmethod
+    def gerar_planilha_wan(dados_planilha, caminho_arquivo="devices_wan.xlsx"):
+        """
+        Gera uma planilha Excel com as colunas Serial, Wan 1, Wan 2, Wan 3.
+        """
+        if not dados_planilha:
+            print("Nenhum dado encontrado para gerar a planilha.")
+            return
+        df = pd.DataFrame(dados_planilha)
+        df.to_excel(caminho_arquivo, index=False)
+        print(
+            f"Planilha '{caminho_arquivo}' gerada com sucesso no diretório raiz do projeto."
+        )
+
+    @staticmethod
     def extract_wan_ids_from_notes(notes: str) -> dict:
         """
-        Extrai identificadores de 7 dígitos inteiros do campo notes.
-        Retorna um dicionário: {"Wan 1": "1836542", ...}
+        Extrai identificadores dos seguintes padrões do campo notes:
+        - 7 dígitos inteiros
+        - BN_XXXXXXX (BN_ + 7 números)
+        - BLXXXXXXXXXXXXX (BL + 13 números)
+        - SPO-XXXXXXXXX-XX (SPO-10 caracteres-3 caracteres)
+        - ICCID com 20 dígitos (apenas os 20 dígitos após ICCID)
+        Retorna um dicionário: {"Wan 1": valor, ...}
         """
         import re
 
-        ids = re.findall(r"(?<!\d)(\d{7})(?!\d)", notes)
+        ids = []
+        # 1. 7 dígitos inteiros
+        ids += re.findall(r"(?<!\d)(\d{7})(?!\d)", notes)
+        # 2. BN_XXXXXXX
+        ids += re.findall(r"BN_(\d{7})", notes)
+        # 3. BLXXXXXXXXXXXXX
+        ids += re.findall(r"BL(\d{13})", notes)
+        # 4. SPO-XXXXXXXXX-XX
+        ids += re.findall(r"SPO-([A-Za-z0-9]{10}-[A-Za-z0-9]{3})", notes)
+        # 5. ICCID com 20 dígitos (apenas os 20 dígitos após ICCID)
+        iccid_matches = re.findall(r"ICCID\s*=*\s*(\d{20})", notes)
+        ids += iccid_matches
+        # 6. ARQ/IP/XXXXX (5 números após ARQ/IP/)
+        ids += re.findall(r"ARQ/IP/(\d{5})", notes)
+        # 7. CAS/IP/XXXXX (5 números após CAS/IP/)
+        ids += re.findall(r"CAS/IP/(\d{5})", notes)
+        # 8. XXX/XXXXXXXX-X (3 números / 8 números - 1 número)
+        ids += re.findall(r"(\d{3}/\d{8}-\d)", notes)
         return {f"Wan {i + 1}": wan_id for i, wan_id in enumerate(ids)}
 
     def __init__(self, api_key: str):
@@ -83,12 +119,4 @@ if __name__ == "__main__":
                     for i in range(1, 4):
                         linha[f"Wan {i}"] = wans.get(f"Wan {i}", "")
                     dados_planilha.append(linha)
-        # Gerar planilha se houver dados
-        if dados_planilha:
-            df = pd.DataFrame(dados_planilha)
-            df.to_excel("devices_wan.xlsx", index=False)
-            print(
-                "Planilha 'devices_wan.xlsx' gerada com sucesso no diretório raiz do projeto."
-            )
-        else:
-            print("Nenhum dado encontrado para gerar a planilha.")
+    MerakiAPI.gerar_planilha_wan(dados_planilha)
