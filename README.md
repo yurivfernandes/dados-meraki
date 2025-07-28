@@ -1,3 +1,35 @@
+# dados-meraki
+
+Este projeto facilita a extração de informações de dispositivos Meraki e a geração de planilhas Excel com dados relevantes de WAN.
+
+## Estrutura dos Arquivos
+
+- **meraki_organizacoes_dispositivos.py**: Script principal. Gera uma planilha Excel (`meraki_organizacoes_dispositivos.xlsx`) com duas abas: uma com todas as organizações e outra com todos os dispositivos de todas as organizações Meraki acessíveis pela API_KEY.
+
+## Como usar
+
+1. Crie um arquivo `.env` na raiz do projeto com sua chave de API:
+	```
+	API_KEY=seu_api_key_aqui
+	```
+
+2. Instale as dependências:
+	```bash
+	pip install -r requirements.txt
+	```
+
+
+3. Para gerar uma planilha Excel com duas abas (Organizações e Dispositivos):
+	```bash
+	python meraki_organizacoes_dispositivos.py
+	```
+
+O arquivo `meraki_organizacoes_dispositivos.xlsx` será criado com todos os dados extraídos.
+
+## Observações
+
+- O método `patch_requests_ssl()` desabilita a verificação SSL globalmente para o pacote requests, útil para ambientes de desenvolvimento com certificados autoassinados.
+- O script busca dispositivos dos modelos MX67 e MX68, mas pode ser facilmente adaptado para outros modelos.
 
 
 # dados-meraki
@@ -18,13 +50,10 @@
 
 ## ✨ O que o projeto faz?
 
-- Consulta a API da Cisco Meraki para buscar dispositivos dos modelos <b>MX67</b> e <b>MX68</b>.
-- Para cada dispositivo, extrai o número de série (<code>serial</code>) e, a partir do campo <code>notes</code>, identifica diversos padrões de identificadores de WAN.
-- Gera uma planilha <b>devices_wan.xlsx</b> no diretório raiz do projeto, contendo as colunas:
-	- Serial
-	- Wan 1
-	- Wan 2
-	- Wan 3
+- Consulta a API da Cisco Meraki para buscar todas as organizações e todos os dispositivos de todas as organizações disponíveis para a sua API_KEY.
+- Gera uma planilha <b>meraki_organizacoes_dispositivos.xlsx</b> no diretório raiz do projeto, contendo duas abas:
+	- Organizacoes: todos os dados das organizações
+	- Dispositivos: todos os dados dos dispositivos de todas as organizações
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -68,15 +97,16 @@
 
 ## ▶️ Como rodar o projeto
 
+
 Execute o script principal:
 
 ```bash
-python devices.py
+python meraki_organizacoes_dispositivos.py
 ```
 
 O script irá:
-- Buscar os dispositivos dos modelos MX67 e MX68.
-- Gerar a planilha <b>devices_wan.xlsx</b> com os dados extraídos.
+- Buscar todas as organizações e todos os dispositivos de todas as organizações.
+- Gerar a planilha <b>meraki_organizacoes_dispositivos.xlsx</b> com os dados extraídos em duas abas.
 
 ## 🔎 Observações
 - O campo <code>notes</code> de cada dispositivo é analisado para encontrar:
