@@ -74,8 +74,8 @@ if __name__ == "__main__":
                         device["details"] = details_str
                     # Expandir notes em note.1, note.2, ...
                     notes = device.get("notes")
-                    if isinstance(notes, str) and "\n" in notes:
-                        notes_split = notes.split("\n")
+                    if isinstance(notes, str) and "\n\n" in notes:
+                        notes_split = notes.split("\n\n")
                         for idx, note in enumerate(notes_split):
                             key = f"note.{idx + 1}"
                             device[key] = note
